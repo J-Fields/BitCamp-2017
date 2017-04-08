@@ -48,7 +48,7 @@ public class RunNGun extends Thread {
     			.getDefaultConfiguration();
     
     //Stuff we actually care about
-    private final static double TICK = 1;
+    private final static double TICK = 0.1;
     Player[][] grid;
     Player offense;
     int down;
@@ -56,6 +56,7 @@ public class RunNGun extends Thread {
     double timeUntilNextTick;
     ArrayList<Player> defenders;
     Random rand = new Random();
+    PlayerController controller = new HumanPlayer();
 
     // create a hardware accelerated image
     public final BufferedImage create(final int width, final int height,
@@ -170,7 +171,7 @@ public class RunNGun extends Thread {
     		for (int j = 0; j < 100; j++) {
     			if (i == offense.x && j == offense.y) {
 					grid[i][j] = offense;
-				} else if (j > 20 && rand.nextInt(10) <= 1) {
+				} else if (j > 20 && rand.nextInt(10) <= 0) {
 					Player defender = new Player(i, j, false);
     				grid[i][j] = defender; 
     				defenders.add(defender);
@@ -188,6 +189,7 @@ public class RunNGun extends Thread {
     	timeUntilNextTick -= delta;
     	if (timeUntilNextTick <= 0) {
     		moveDefenders();
+    		moveOffense();
     		timeUntilNextTick += TICK;
     	}
     }
@@ -196,9 +198,16 @@ public class RunNGun extends Thread {
     	g.setColor(Color.GREEN);
     	g.fillRect(0, 0, width, height);
     	int startY = offense.y - 1;
+    	if (startY > 93) {
+    		startY = 93;
+    	}
     	for (int y = startY; y < startY + 7; y++) {
     		for (int x = 0; x < 7; x++) {
-				if (grid[x][y] == null) {
+    			if (y >= 99) {
+					g.setColor(Color.YELLOW);
+					g.fillRect((int)(x/7.0*width), (int)(height-(y-startY+1)/7.0*height), (int)(width/7.0), (int)(height/7.0));
+    			} 
+    			if (grid[x][y] == null) {
 					// Nothing there
 				} else if (grid[x][y].offense) {
 					g.setColor(Color.BLUE);
@@ -225,20 +234,21 @@ public class RunNGun extends Thread {
 
     void moveDefenders() {
     	for (Player defender : defenders) {
-    		int x = defender.x, y = defender.y;
     		int r = rand.nextInt(6);
-			if (r == Move.UP.ordinal() && y < 99 && grid[x][y+1] == null) {
-				defender.y = y + 1;
-			} else if (r == Move.DOWN.ordinal() && y > 0 && grid[x][y-1] == null) {
-				defender.y = y - 1;
-			} else if (r == Move.RIGHT.ordinal() && x < 6 && grid[x+1][y] == null) {
-				defender.x = x + 1;
-			} else if (r == Move.LEFT.ordinal() && x > 0 && grid[x-1][y] == null) {
-				defender.x = x - 1;
-			}
-			grid[x][y] = null;
-			grid[defender.x][defender.y] = defender;
+    		if (r == 0) {
+    			defender.move(grid, Move.UP);
+    		} else if (r == 1) {
+    			defender.move(grid, Move.DOWN);
+    		} else if (r == 2) {
+    			defender.move(grid, Move.LEFT);
+    		} else if (r == 3) {
+    			defender.move(grid, Move.RIGHT);
+    		}
     	}
+    }
+    
+    void moveOffense() {
+    	offense.move(grid, controller.chooseMove(grid, offense.x, offense.y));
     }
 
 	public static void main(String[] args) {}
