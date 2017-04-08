@@ -188,7 +188,7 @@ public class RunNGun extends Thread {
     	//g.setColor(Color.GREEN);
     	//g.fillRect(0, 0, width, height);
     	int startY = offense.y - 1;
-    	for (int y = startY; y < startY + 6; y++) {
+    	for (int y = startY; y < startY + 7; y++) {
     		for (int x = 0; x < 7; x++) {
 				if (grid[x][y] == null) {
 					g.setColor(Color.GREEN);
@@ -197,29 +197,26 @@ public class RunNGun extends Thread {
 				} else {
 					g.setColor(Color.RED);
 				}
-				g.fillRect((int)(x/6.0*width), (int)(height-(y-startY+1)/6.0*height), (int)(width/6.0), (int)(height/6.0));
+				g.fillRect((int)(x/7.0*width), (int)(height-(y-startY+1)/7.0*height), (int)(width/7.0), (int)(height/7.0));
     		}
     	}
     }
 
     void moveDefenders() {
-    	System.out.println("tick");
     	for (Player defender : defenders) {
+    		int x = defender.x, y = defender.y;
     		int r = rand.nextInt(6);
-			if (r == 0 && defender.y < 99 && grid[defender.x][defender.y+1] == null) {
-				grid[defender.x][defender.y+1] = defender;
-				defender.y = defender.y + 1;
-			} else if (r == 1 && defender.y > 0 && grid[defender.x][defender.y-1] == null) {
-				grid[defender.x][defender.y-1] = defender;
-				defender.y = defender.y - 1;
-			} else if (r == 2 && defender.x < 6 && grid[defender.x+1][defender.y] == null) {
-				grid[defender.x+1][defender.y] = defender;
-				defender.x = defender.x + 1;
-			} else if (r == 3 && defender.x > 0 && grid[defender.x-1][defender.y] == null) {
-				grid[defender.x-1][defender.y] = defender;
-				defender.x = defender.x - 1;
+			if (r == 0 && y < 99 && grid[x][y+1] == null) {
+				defender.y = y + 1;
+			} else if (r == 1 && y > 0 && grid[x][y-1] == null) {
+				defender.y = y - 1;
+			} else if (r == 2 && x < 6 && grid[x+1][y] == null) {
+				defender.x = x + 1;
+			} else if (r == 3 && x > 0 && grid[x-1][y] == null) {
+				defender.x = x - 1;
 			}
-			grid[defender.x][defender.y] = null;
+			grid[x][y] = null;
+			grid[defender.x][defender.y] = defender;
     	}
     }
 
