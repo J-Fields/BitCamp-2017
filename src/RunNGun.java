@@ -23,6 +23,14 @@ public class RunNGun extends Thread {
 		INGAME
 	}
 	
+	public enum Move {
+		UP,
+		DOWN,
+		LEFT,
+		RIGHT,
+		NO_MOVE
+	}
+	
 	// Window stuff
 	private final static RunNGun runNGun = new RunNGun();
     private GameState gameState = GameState.SPLASH;
@@ -185,20 +193,33 @@ public class RunNGun extends Thread {
     }
 
     public void renderGame(Graphics2D g) {
-    	//g.setColor(Color.GREEN);
-    	//g.fillRect(0, 0, width, height);
+    	g.setColor(Color.GREEN);
+    	g.fillRect(0, 0, width, height);
     	int startY = offense.y - 1;
     	for (int y = startY; y < startY + 7; y++) {
     		for (int x = 0; x < 7; x++) {
 				if (grid[x][y] == null) {
-					g.setColor(Color.GREEN);
+					// Nothing there
 				} else if (grid[x][y].offense) {
 					g.setColor(Color.BLUE);
+					g.fillOval((int)(x/7.0*width), (int)(height-(y-startY+1)/7.0*height), (int)(width/7.0), (int)(height/7.0));
 				} else {
 					g.setColor(Color.RED);
+					g.fillOval((int)(x/7.0*width), (int)(height-(y-startY+1)/7.0*height), (int)(width/7.0), (int)(height/7.0));
 				}
-				g.fillRect((int)(x/7.0*width), (int)(height-(y-startY+1)/7.0*height), (int)(width/7.0), (int)(height/7.0));
     		}
+    	}
+    	
+    	g.setColor(Color.BLACK);
+    	
+    	for (int y = 0; y < 7; y++) {
+    		int yCoord = (int)(y/7.0*height);
+    		g.drawLine(0, yCoord, width, yCoord);
+    	}
+
+    	for (int x = 0; x < 7; x++) {
+    		int xCoord = (int)(x/7.0*height);
+    		g.drawLine(xCoord, 0, xCoord, height);
     	}
     }
 
@@ -206,13 +227,13 @@ public class RunNGun extends Thread {
     	for (Player defender : defenders) {
     		int x = defender.x, y = defender.y;
     		int r = rand.nextInt(6);
-			if (r == 0 && y < 99 && grid[x][y+1] == null) {
+			if (r == Move.UP.ordinal() && y < 99 && grid[x][y+1] == null) {
 				defender.y = y + 1;
-			} else if (r == 1 && y > 0 && grid[x][y-1] == null) {
+			} else if (r == Move.DOWN.ordinal() && y > 0 && grid[x][y-1] == null) {
 				defender.y = y - 1;
-			} else if (r == 2 && x < 6 && grid[x+1][y] == null) {
+			} else if (r == Move.RIGHT.ordinal() && x < 6 && grid[x+1][y] == null) {
 				defender.x = x + 1;
-			} else if (r == 3 && x > 0 && grid[x-1][y] == null) {
+			} else if (r == Move.LEFT.ordinal() && x > 0 && grid[x-1][y] == null) {
 				defender.x = x - 1;
 			}
 			grid[x][y] = null;
