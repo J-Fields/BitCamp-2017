@@ -9,6 +9,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -20,7 +22,8 @@ public class RunNGun extends Thread {
 		PAUSED,
 		INGAME
 	}
-
+	
+	// Window stuff
 	private final static RunNGun runNGun = new RunNGun();
     private GameState gameState = GameState.SPLASH;
     private Canvas canvas;
@@ -35,6 +38,16 @@ public class RunNGun extends Thread {
     		GraphicsEnvironment.getLocalGraphicsEnvironment()
     			.getDefaultScreenDevice()
     			.getDefaultConfiguration();
+    
+    //Stuff we actually care about
+    private final static double TICK = 1;
+    Player[][] grid;
+    Player offense;
+    int down;
+    int goalYard;
+    double timeUntilNextTick;
+    ArrayList<Player> defenders;
+    Random rand = new Random();
 
     // create a hardware accelerated image
     public final BufferedImage create(final int width, final int height,
@@ -44,6 +57,8 @@ public class RunNGun extends Thread {
     }
 
     private RunNGun() {
+    	reset();
+
     	// JFrame
     	frame = new JFrame();
     	frame.addWindowListener(new FrameClose());
@@ -134,16 +149,78 @@ public class RunNGun extends Thread {
     	frame.dispose();
     }
 
+    public void reset() {
+    	down = 1;
+    	goalYard = 30;
+    	timeUntilNextTick = TICK;
+    	
+    	defenders = new ArrayList<Player>();
+
+    	offense = new Player(3, 20, true);
+    	grid = new Player[7][100];
+    	for (int i = 0; i < 7; i++) {
+    		for (int j = 0; j < 100; j++) {
+    			if (i == offense.x && j == offense.y) {
+					grid[i][j] = offense;
+				} else if (j > 20 && rand.nextInt(10) <= 1) {
+					Player defender = new Player(i, j, false);
+    				grid[i][j] = defender; 
+    				defenders.add(defender);
+    			} else {
+					grid[i][j] = null;
+    			}
+    		}
+		}
+    }
+    
     /**
      * Applies game logic each frame.
      */
     public void updateGame(double delta) {
-    	
+    	timeUntilNextTick -= delta;
+    	if (timeUntilNextTick <= 0) {
+    		moveDefenders();
+    		timeUntilNextTick += TICK;
+    	}
     }
 
     public void renderGame(Graphics2D g) {
-    	g.setColor(Color.GREEN);
-    	g.fillRect(0, 0, width, height);
+    	//g.setColor(Color.GREEN);
+    	//g.fillRect(0, 0, width, height);
+    	int startY = offense.y - 1;
+    	for (int y = startY; y < startY + 6; y++) {
+    		for (int x = 0; x < 7; x++) {
+				if (grid[x][y] == null) {
+					g.setColor(Color.GREEN);
+				} else if (grid[x][y].offense) {
+					g.setColor(Color.BLUE);
+				} else {
+					g.setColor(Color.RED);
+				}
+				g.fillRect((int)(x/6.0*width), (int)(height-(y-startY+1)/6.0*height), (int)(width/6.0), (int)(height/6.0));
+    		}
+    	}
+    }
+
+    void moveDefenders() {
+    	System.out.println("tick");
+    	for (Player defender : defenders) {
+    		int r = rand.nextInt(6);
+			if (r == 0 && defender.y < 99 && grid[defender.x][defender.y+1] == null) {
+				grid[defender.x][defender.y+1] = defender;
+				defender.y = defender.y + 1;
+			} else if (r == 1 && defender.y > 0 && grid[defender.x][defender.y-1] == null) {
+				grid[defender.x][defender.y-1] = defender;
+				defender.y = defender.y - 1;
+			} else if (r == 2 && defender.x < 6 && grid[defender.x+1][defender.y] == null) {
+				grid[defender.x+1][defender.y] = defender;
+				defender.x = defender.x + 1;
+			} else if (r == 3 && defender.x > 0 && grid[defender.x-1][defender.y] == null) {
+				grid[defender.x-1][defender.y] = defender;
+				defender.x = defender.x - 1;
+			}
+			grid[defender.x][defender.y] = null;
+    	}
     }
 
 	public static void main(String[] args) {}
