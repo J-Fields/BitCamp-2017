@@ -9,16 +9,41 @@ public class Player {
 		this.offense = offense;
 	}
 	
-	public void move(Player[][] grid, RunNGun.Move m) {
+	public void move(RunNGun rng, RunNGun.Move m) {
+		Player[][] grid = rng.grid;
 		int x = this.x, y = this.y;
-		if (m == RunNGun.Move.UP && y < 99 && grid[x][y+1] == null) {
-			this.y = y + 1;
-		} else if (m == RunNGun.Move.DOWN && y > 0 && grid[x][y-1] == null) {
-			this.y = y - 1;
-		} else if (m == RunNGun.Move.RIGHT && x < 6 && grid[x+1][y] == null) {
-			this.x = x + 1;
-		} else if (m == RunNGun.Move.LEFT && x > 0 && grid[x-1][y] == null) {
-			this.x = x - 1;
+		if (m == RunNGun.Move.UP && y < 99) {
+			if (grid[x][y+1] == null) {
+				this.y = y + 1;
+			} else if (grid[x][y+1].offense != this.offense) {
+				this.y = y + 1;
+				rng.tackle();
+			}
+			
+		} else if (m == RunNGun.Move.DOWN && y > 0) {
+			if (grid[x][y-1] == null) {
+				this.y = y - 1;
+			} else if (grid[x][y-1].offense != this.offense) {
+				this.y = y - 1;
+				rng.tackle();
+			}
+			
+		} else if (m == RunNGun.Move.RIGHT && x < 6) {
+			if (grid[x+1][y] == null) {
+				this.x = x + 1;
+			} else if (grid[x+1][y].offense != this.offense) {
+				this.x = x + 1;
+				rng.tackle();
+			}
+			
+		} else if (m == RunNGun.Move.LEFT && x > 0) {
+			if (grid[x-1][y] == null) {
+				this.x = x - 1;
+			} else if (grid[x-1][y].offense != this.offense) {
+				this.x = x - 1;
+				rng.tackle();
+			}
+			
 		}
 		grid[x][y] = null;
 		grid[this.x][this.y] = this;
